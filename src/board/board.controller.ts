@@ -1,9 +1,11 @@
-import { Controller, Get, Post, Put, Delete, Body, Param } from '@nestjs/common';
+import { UseGuards ,Controller, Get, Post, Put, Delete, Body, Param } from '@nestjs/common';
 import { BoardService } from './board.service';
 import { BoardDto } from './dto/board.dto';
 import { BoardResponseDto } from './dto/bordResponse.dto'; 
+import { JwtAuthGuard } from 'src/user/guard/jwt-auth.guard';
 
 @Controller('board')
+// @UseGuards(JwtAuthGuard)
 export class BoardController {
 
     constructor(

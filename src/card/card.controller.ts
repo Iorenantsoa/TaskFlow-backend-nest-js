@@ -1,9 +1,11 @@
-import { Body, Controller, Get, Param , Post , Put  , Delete} from '@nestjs/common';
+import { UseGuards , Body, Controller, Get, Param , Post , Put  , Delete} from '@nestjs/common';
 import { CardService } from './card.service';
 import { CardDto } from './dto/card.dto';
 import { CardResponseDto } from './dto/cardResponse.dto';
+import { JwtAuthGuard } from 'src/user/guard/jwt-auth.guard';
 
 @Controller('card')
+// @UseGuards(JwtAuthGuard)
 export class CardController {
 
     constructor(

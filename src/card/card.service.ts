@@ -12,16 +12,15 @@ export class CardService {
     constructor(
         @InjectModel(Card.name) private cardModel: Model<CardDocument>,
         @InjectModel(List.name) private listModel: Model<ListDocument>
-    ) { } 
- 
+    ) { }
+
     async createCard(card: CardDto): Promise<CardResponseDto> {
 
         try {
             const newCard = await this.cardModel.create(card)
             const cardData = newCard.toObject()
 
-            const aa = await this.listModel.findByIdAndUpdate({ _id: newCard.list }, { $push: { cards: newCard._id } })
-            console.log(aa)
+            await this.listModel.findByIdAndUpdate({ _id: newCard.list }, { $push: { cards: newCard._id } })
             return { success: true, message: "Carte ajoutée avec success", card: cardData }
         } catch (error) {
             return { success: false, message: error, card: null }
@@ -41,7 +40,10 @@ export class CardService {
 
     async findOneCard(id: string): Promise<CardResponseDto> {
         try {
-            const card = await this.cardModel.findOne({ _id: id })
+            const card = await this.cardModel.findOne({ _id: id }).populate('list')
+            if (!card) {
+                return { success: false, message: "Carte non trouvée", card: null }
+            }
             return { success: true, message: "Carte trouvée", card }
         } catch (error) {
             return { success: false, message: "Une erreur s'est produite", card: null }
@@ -59,7 +61,19 @@ export class CardService {
 
     async deleteCard(id: string): Promise<any> {
         try {
-            this.cardModel.findByIdAndDelete({ _id: id })
+
+            const card = await this.cardModel.findByIdAndDelete({ _id: id })
+
+
+            if (!card) {
+                return { success: false, message: "La carte n'est pas trouvée" }
+            }
+
+            await this.listModel.findByIdAndUpdate(
+                { _id: card.list },
+                { $pull: { cards: card._id } }
+            );
+
             return { success: true, message: "Carte effacée avec success" }
 
         } catch (error) {

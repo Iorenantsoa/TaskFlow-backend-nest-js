@@ -29,19 +29,32 @@ export class ListService {
 
         }
     }
-
     async createList(newList: ListDto): Promise<ListResponseDto> {
         try {
             const list = await this.listModel.create(newList)
-
-            const aa = await this.boardModel.findByIdAndUpdate({ _id: newList.board }, { $push: { lists: list._id } })
-            console.log(aa)
-            return { success: true, message: "Liste créee avec success", list: list }
+    
+            console.log(list)
+    
+            // Vérification si le board existe
+            const board = await this.boardModel.findById(list.board);
+            if (!board) {
+                console.log('Board non trouvé');
+                return { success: false, message: "Board non trouvé", list: null };
+            }
+    
+            const aa = await this.boardModel.findByIdAndUpdate(
+                list.board,
+                { $push: { lists: list._id } },
+                { new: true } // Renvoie le document mis à jour
+            );
+    
+            console.log(aa);
+            return { success: true, message: "Liste créee avec success", list: list };
         } catch (error) {
-            return { success: false, message: "Une erreur s'est produite", list: null }
+            return { success: false, message: "Une erreur s'est produite", list: null };
         }
     }
-
+    
     async updateList(id: string, list: ListDto): Promise<ListResponseDto> {
 
         try {
@@ -62,14 +75,17 @@ export class ListService {
             }
 
             await this.cardModel.deleteMany({ _id: { $in: list.cards } })
-
+        
             await this.listModel.findByIdAndDelete(id)
-            
+ 
+            await this.boardModel.findByIdAndUpdate(
+                { _id: list.board },
+                { $pull: { lists: list._id } }
+            );
+
             return { success: true, message: "Liste effacée avec success", list }
         } catch (error) {
             return { success: false, message: "Une erreur s'est produite", list: null }
         }
     }
-
-
 }
