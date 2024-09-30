@@ -4,13 +4,17 @@ import { List, ListDocument } from './schema/list.schema';
 import { Model } from 'mongoose';
 import { ListResponseDto } from './dto/ListResponse.dto';
 import { ListDto } from './dto/list.dto';
+import { Board, BoardDocument } from 'src/board/schema/board.schema';
+import { Card, CardDocument } from 'src/card/schema/card.schema';
 
 @Injectable()
 export class ListService {
 
 
     constructor(
-        @InjectModel(List.name) private listModel: Model<ListDocument>
+        @InjectModel(List.name) private listModel: Model<ListDocument>,
+        @InjectModel(Board.name) private boardModel: Model<BoardDocument>,
+        @InjectModel(Card.name) private cardModel: Model<CardDocument>
     ) { }
 
     async find(): Promise<ListResponseDto> {
@@ -29,6 +33,9 @@ export class ListService {
     async createList(newList: ListDto): Promise<ListResponseDto> {
         try {
             const list = await this.listModel.create(newList)
+
+            const aa = await this.boardModel.findByIdAndUpdate({ _id: newList.board }, { $push: { lists: list._id } })
+            console.log(aa)
             return { success: true, message: "Liste créee avec success", list: list }
         } catch (error) {
             return { success: false, message: "Une erreur s'est produite", list: null }
@@ -44,6 +51,24 @@ export class ListService {
             return { success: false, message: "Une erreur s'est produite", list: null }
         }
 
+    }
+
+    async deleteList(id: string): Promise<ListResponseDto> {
+        try {
+
+            const list = await this.listModel.findById(id)
+            if (!list) {
+                return { success: false, message: "Pas de Liste à supprimée", list: null }
+            }
+
+            await this.cardModel.deleteMany({ _id: { $in: list.cards } })
+
+            await this.listModel.findByIdAndDelete(id)
+            
+            return { success: true, message: "Liste effacée avec success", list }
+        } catch (error) {
+            return { success: false, message: "Une erreur s'est produite", list: null }
+        }
     }
 
 

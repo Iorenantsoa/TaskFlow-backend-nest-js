@@ -12,8 +12,8 @@ export class CardService {
     constructor(
         @InjectModel(Card.name) private cardModel: Model<CardDocument>,
         @InjectModel(List.name) private listModel: Model<ListDocument>
-    ) { }
-
+    ) { } 
+ 
     async createCard(card: CardDto): Promise<CardResponseDto> {
 
         try {

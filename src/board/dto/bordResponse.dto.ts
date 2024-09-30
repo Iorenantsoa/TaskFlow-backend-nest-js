@@ -1,8 +1,8 @@
 // import { CardDocument } from "../schema/card.schema"
 
-export class ListResponseDto {
+export class BoardResponseDto {
     success  :  boolean 
     message : string
-    list : any 
+    board : any
 
 }

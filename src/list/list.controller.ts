@@ -1,4 +1,4 @@
-import { Controller , Get ,Post , Body  ,Put , Param} from '@nestjs/common';
+import { Controller , Get ,Post , Body  ,Put , Param , Delete} from '@nestjs/common';
 import { ListService } from './list.service'; 
 import { ListDto } from './dto/list.dto';
 
@@ -24,8 +24,15 @@ export class ListController {
     @Put('/update-list/:id')
     async updateList(
         @Body() list : ListDto,
-        @Param() id : string
+        @Param('id') id : string
     ) : Promise<any>{
         return this.listService.updateList(id , list)
+    }
+
+    @Delete('/delete-list/:id')
+    async deleteBoard(
+        @Param('id') id : string
+    ): Promise<any> { 
+        return this.listService.deleteList(id)
     }
 }
