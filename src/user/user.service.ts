@@ -17,7 +17,8 @@ export class UserService {
     ) { }
     async registration(user: UserDto): Promise<UserResponseDto> {
 
-        try {
+        try { 
+
             const newUser = await this.userModel.create({ ...user })
 
             newUser.password = await bcrypt.hash(user.password, 10)
@@ -26,7 +27,8 @@ export class UserService {
 
             return { success: true, message: "Régitration effectuée avec succes", user: newUser }
         } catch (error) {
-            return { success: false, message: "Une erreur s'est produite", user: null }
+            console.log(error)
+            return { success: false, message: error.message, user: null }
         }
     }
 
@@ -44,6 +46,8 @@ export class UserService {
 
                     const payload = { id: user._id, username: user.username, email: user.email };
                     return {
+                        success : true , 
+                        message : "Bienvenue ",
                         access_token: this.jwtService.sign(payload),
                     };
 
@@ -59,6 +63,7 @@ export class UserService {
 
     }
 
+     
 
 
 

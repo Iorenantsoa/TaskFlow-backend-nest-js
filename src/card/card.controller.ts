@@ -1,11 +1,11 @@
-import { UseGuards , Body, Controller, Get, Param , Post , Put  , Delete} from '@nestjs/common';
+import { UseGuards, Body, Controller, Get, Param, Post, Put, Delete } from '@nestjs/common';
 import { CardService } from './card.service';
 import { CardDto } from './dto/card.dto';
 import { CardResponseDto } from './dto/cardResponse.dto';
 import { JwtAuthGuard } from 'src/user/guard/jwt-auth.guard';
 
 @Controller('card')
-// @UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard)
 export class CardController {
 
     constructor(
@@ -24,25 +24,27 @@ export class CardController {
         return this.cardService.findOneCard(id)
     }
 
-    @Post('/create-card')
+    @Post('/create-card/:ListId')
     async createCard(
-        @Body() card: CardDto
-    ): Promise<CardResponseDto> {
-        return this.cardService.createCard(card)
+        @Body() card: CardDto,
+        @Param('ListId') ListId: string
+    ): Promise<CardResponseDto> { 
+        return this.cardService.createCard(card, ListId)
     }
 
     @Put('/update-card/:id')
     async updateCard(
         @Body() card: CardDto,
-        @Param('id') id : string
-    ) : Promise <any>{
-        return this.cardService.updateCard(card , id)
+        @Param('id') id: string
+    ): Promise<any> {
+        return this.cardService.updateCard(card, id)
     }
 
     @Delete('/delete-card/:id')
-    async deleteCard( 
-        @Param('id') id : string
-    ) : Promise <any>{
+    async deleteCard(
+        @Param('id') id: string
+    ): Promise<any> {
         return this.cardService.deleteCard(id)
     }
 } 
+ 

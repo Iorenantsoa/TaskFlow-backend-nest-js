@@ -15,7 +15,7 @@ export class ListService {
         @InjectModel(List.name) private listModel: Model<ListDocument>,
         @InjectModel(Board.name) private boardModel: Model<BoardDocument>,
         @InjectModel(Card.name) private cardModel: Model<CardDocument>
-    ) { }
+    ) { } 
 
     async find(): Promise<ListResponseDto> {
 
@@ -29,32 +29,35 @@ export class ListService {
 
         }
     }
-    async createList(newList: ListDto): Promise<ListResponseDto> {
+    async createList(newList: ListDto, boardId: any): Promise<ListResponseDto> {
         try {
             const list = await this.listModel.create(newList)
-    
-            console.log(list)
-    
+
             // Vérification si le board existe
-            const board = await this.boardModel.findById(list.board);
+            const board = await this.boardModel.findById(boardId);
+
             if (!board) {
                 console.log('Board non trouvé');
                 return { success: false, message: "Board non trouvé", list: null };
             }
-    
-            const aa = await this.boardModel.findByIdAndUpdate(
+
+            list.board = board
+
+            await list.save()
+            await this.boardModel.findByIdAndUpdate(
                 list.board,
                 { $push: { lists: list._id } },
-                { new: true } // Renvoie le document mis à jour
+                { new: true }
             );
-    
-            console.log(aa);
+
             return { success: true, message: "Liste créee avec success", list: list };
+
+
         } catch (error) {
             return { success: false, message: "Une erreur s'est produite", list: null };
         }
     }
-    
+
     async updateList(id: string, list: ListDto): Promise<ListResponseDto> {
 
         try {
@@ -68,24 +71,27 @@ export class ListService {
 
     async deleteList(id: string): Promise<ListResponseDto> {
         try {
-
             const list = await this.listModel.findById(id)
             if (!list) {
                 return { success: false, message: "Pas de Liste à supprimée", list: null }
             }
 
+
             await this.cardModel.deleteMany({ _id: { $in: list.cards } })
-        
+
             await this.listModel.findByIdAndDelete(id)
  
+
             await this.boardModel.findByIdAndUpdate(
                 { _id: list.board },
                 { $pull: { lists: list._id } }
             );
+            console.log(this.boardModel)
 
             return { success: true, message: "Liste effacée avec success", list }
         } catch (error) {
-            return { success: false, message: "Une erreur s'est produite", list: null }
+            console.log(error)
+            return { success: false, message: error, list: null }
         }
     }
 }

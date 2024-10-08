@@ -14,16 +14,29 @@ export class CardService {
         @InjectModel(List.name) private listModel: Model<ListDocument>
     ) { }
 
-    async createCard(card: CardDto): Promise<CardResponseDto> {
+    async createCard(card: CardDto, listId: any): Promise<CardResponseDto> {
 
         try {
-            const newCard = await this.cardModel.create(card)
+
+            // console.log(listId)
+            const listFound = await this.listModel.findById(listId)
+
+            // console.log(listFound):
+            if (!listFound) {
+
+                return { success: false, message: "Liste non trouvée", card: null }
+            }
+
+            const newCard = await this.cardModel.create({title : card.title , list : listId})
+           
+ 
+
             const cardData = newCard.toObject()
 
             await this.listModel.findByIdAndUpdate({ _id: newCard.list }, { $push: { cards: newCard._id } })
             return { success: true, message: "Carte ajoutée avec success", card: cardData }
         } catch (error) {
-            return { success: false, message: error, card: null }
+            return { success: false, message: error.message, card: null }
         }
     }
 
@@ -59,7 +72,7 @@ export class CardService {
         }
     }
 
-    async deleteCard(id: string): Promise<any> {
+    async deleteCard(id: string ): Promise<any> {
         try {
 
             const card = await this.cardModel.findByIdAndDelete({ _id: id })
@@ -81,3 +94,4 @@ export class CardService {
         }
     }
 }
+ 

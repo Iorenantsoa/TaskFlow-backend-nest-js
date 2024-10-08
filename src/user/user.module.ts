@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module  , forwardRef} from '@nestjs/common';
 import { UserController } from './user.controller';
 import { UserService } from './user.service';
 import { MongooseModule } from '@nestjs/mongoose';
@@ -7,6 +7,7 @@ import { PassportModule } from '@nestjs/passport';
 import { JwtModule } from '@nestjs/jwt';
 import * as dotenv from 'dotenv'
 import { JwtStrategy } from './strategy/jwt.strategy';
+import { BoardModule } from 'src/board/board.module';
 
 dotenv.config()
 
@@ -16,10 +17,12 @@ dotenv.config()
         PassportModule,
       JwtModule.register({
         secret: process.env.SECRET,
-        signOptions: { expiresIn: '60s' },
+        signOptions: { expiresIn: '3600s' },
       }),
+      forwardRef(() => BoardModule)
   ],
   controllers: [UserController],
-  providers: [UserService , JwtStrategy]
+  providers: [UserService , JwtStrategy] ,
+  exports: [UserService, MongooseModule.forFeature([{ name: User.name, schema: userSchema }])] 
 })
 export class UserModule { }
