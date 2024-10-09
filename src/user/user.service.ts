@@ -7,6 +7,7 @@ import * as bcrypt from 'bcrypt'
 import { UserResponseDto } from './dto/userResponse.dto';
 import { JwtService } from '@nestjs/jwt';
 import { CredentialDto } from './dto/credential.dto';
+import { EditPasswordDto } from './dto/edit-password.dto';
 
 @Injectable()
 export class UserService {
@@ -17,7 +18,7 @@ export class UserService {
     ) { }
     async registration(user: UserDto): Promise<UserResponseDto> {
 
-        try { 
+        try {
 
             const newUser = await this.userModel.create({ ...user })
 
@@ -46,8 +47,8 @@ export class UserService {
 
                     const payload = { id: user._id, username: user.username, email: user.email };
                     return {
-                        success : true , 
-                        message : "Bienvenue ",
+                        success: true,
+                        message: "Bienvenue ",
                         access_token: this.jwtService.sign(payload),
                     };
 
@@ -63,8 +64,47 @@ export class UserService {
 
     }
 
-     
+
+    async editUser(id: any, user: UserDto): Promise<UserResponseDto> {
+
+        try {
+            const userFound = await this.userModel.findById(id)
+
+            if (!userFound) {
+                return { success: false, message: "Utilisateur non trouvé", user: null }
+            }
+
+            const userUpdated = await this.userModel.findByIdAndUpdate(id, user)
+
+            return { success: true, message: "Modfication effectuée", user: userUpdated }
+
+        } catch (error) {
+            return { success: false, message: 'Une erreur s\'est produite', user: null }
+        }
+    }
 
 
+    async editPassword(id: any, editPassword: EditPasswordDto): Promise<UserResponseDto> {
+        try {
+            const user = await this.userModel.findById(id)
+
+            if (!user) {
+                return { success: false, message: "Utilisateur non trouvé", user: null }
+            }
+
+            const matchPassowrd = await bcrypt.compare(editPassword.oldPassword, user.password)
+
+            if (!matchPassowrd) {
+                return { success: false, message: "L'ancien mot de passe est incorrecte", user: null }
+            }
+
+            const newUser = await this.userModel.findByIdAndUpdate(id, editPassword)
+
+            return { success: true, message: "Modfication effectuée", user: newUser }
+
+        } catch (error) {
+            return { success: false, message: "Une erreur s'est produite", user: null }
+        }
+    }
 
 }
